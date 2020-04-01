@@ -125,7 +125,7 @@
   systemd:
     name: "wg-quick@{{ wireguard_network_name }}"
     state: restarted
-  when: config.changed
+  when: config.changed and not wireguard_skip_restart
 
 
 - name: add nodes to /etc/hosts (ansible_inventory resolves to vpn_ip)

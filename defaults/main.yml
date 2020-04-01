@@ -12,3 +12,4 @@ client_wireguard_path: ""
 wireguard_additional_peers: false
 wireguard_post_up: false
 wireguard_post_down: false
+wireguard_skip_restart: false
