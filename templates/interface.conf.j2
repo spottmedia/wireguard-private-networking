@@ -8,6 +8,9 @@ PostUp = {{ wireguard_post_up }}
 PostDown = {{ wireguard_post_down }}
 {% endif %}
 ListenPort = {{ wireguard_port }}
+{% if wireguard_mtu is defined %}
+MTU = {{ wireguard_mtu }}
+{% endif %}
 
 {% for node in play_hosts %}
 {% if inventory_hostname != hostvars[node]['inventory_hostname'] %}
@@ -19,7 +22,7 @@ Endpoint = {{ hostvars[node].vpn_endpoint | default(hostvars[node]['inventory_ho
 {% endif %}
 {% endfor %}
 
-{% if client_wireguard_path | length > 0 %}
+{% if client_vpn_ip | length > 0 %}
 [Peer]
 PublicKey = {{ client_publickey.content | b64decode | trim }}
 AllowedIPs = {{ client_vpn_ip }}
@@ -31,6 +34,12 @@ AllowedIPs = {{ client_vpn_ip }}
 [Peer]
 PublicKey = {{ node.key }}
 AllowedIPs = {{ node.ip }}
+{% if node.endpoint is defined %}
+Endpoint = {{ node.endpoint }}
+{% endif %}
+{% if node.keepalive is defined %}
+PersistentKeepalive = {{ node.keepalive }}
+{% endif %}
 
 {% endfor %}
 {% endif %}

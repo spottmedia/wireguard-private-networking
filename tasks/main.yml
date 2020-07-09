@@ -4,6 +4,7 @@
     repo: 'ppa:wireguard/wireguard'
   when:
     - ansible_distribution == "Ubuntu"
+    - ansible_distribution_major_version|int < 20
 
 - name: Install linux headers (Ubuntu)
   apt:
@@ -12,6 +13,7 @@
     name: linux-headers-generic
   when:
     - ansible_distribution == "Ubuntu"
+    - ansible_distribution_major_version|int < 20
 
 - name: Add unstable repository (Debian)
   copy:
@@ -41,11 +43,73 @@
   when:
     - ansible_distribution == "Debian"
 
-- name: Install wireguard
+- name: Install wireguard (apt)
   apt:
     update_cache: yes
     state: present
     name: wireguard
+  when:
+    - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+- name: Install wireguard (pacman)
+  pacman:
+    name:
+      - wireguard-dkms
+      - wireguard-tools
+    state: present
+  when:
+    - ansible_distribution == "Archlinux"
+
+- name: Install wireguard (CentOS 8)
+  block:
+    - name: Install wireguard (CentOS 8)
+      dnf:
+        name:
+          - elrepo-release
+          - epel-release
+        state: present
+
+    - dnf:
+        name:
+          - kmod-wireguard
+          - wireguard-tools
+        state: present
+
+    - file:
+        path: "{{ wireguard_path }}"
+        state: directory
+        mode: u=rwx,g=,o=
+        group: root
+
+  when: ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "8"
+
+- name: Install wireguard (CentOS 7)
+  block:
+    - name: Install wireguard (CentOS 7)
+      yum:
+        name:
+          - epel-release
+          - https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+        state: present
+
+    - yum:
+        name:
+          - yum-plugin-elrepo
+        state: present
+
+    - yum:
+        name:
+          - kmod-wireguard
+          - wireguard-tools
+        state: present
+
+    - file:
+        path: "{{ wireguard_path }}"
+        state: directory
+        mode: u=rwx,g=,o=
+        group: root
+
+  when: ansible_facts['distribution'] == "CentOS" and ansible_facts['distribution_major_version'] == "7"
 
 - name: Read private key
   stat:
@@ -71,13 +135,13 @@
     path: "{{ wireguard_path }}/client_privatekey"
   register: client_privatekey
   run_once: true
-  when: client_wireguard_path | length > 0
+  when: client_vpn_ip | length > 0
 
 - name: Generate wireguard client's keys
   shell: "umask 077; wg genkey | tee {{ wireguard_path  }}/client_privatekey | wg pubkey > {{ wireguard_path }}/client_publickey"
   run_once: true
   when:
-    - client_wireguard_path | length > 0
+    - client_vpn_ip | length > 0
     - not client_privatekey.stat.exists
 
 - name: Read private client's key
@@ -85,14 +149,14 @@
     src: "{{ wireguard_path }}/client_privatekey"
   register: client_privatekey
   run_once: true
-  when: client_wireguard_path | length > 0
+  when: client_vpn_ip | length > 0
 
 - name: Read public client's key
   slurp:
     src: "{{ wireguard_path }}/client_publickey"
   register: client_publickey
   run_once: true
-  when: client_wireguard_path | length > 0
+  when: client_vpn_ip | length > 0
 
 - name: Generate configs
   template:
@@ -112,7 +176,7 @@
     ansible_connection: local
   become: no
   run_once: true
-  when: client_wireguard_path | length > 0
+  when: client_vpn_ip | length > 0
   delegate_to: localhost
 
 - name: Start and enable wg-quick systemd service
