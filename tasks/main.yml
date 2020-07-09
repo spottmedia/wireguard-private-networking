@@ -53,7 +53,7 @@
 
 - name: Hold version of wireguard (if needed)
   dpkg_selections:
-    name: wireguard
+    name: wireguard-dkms
     selection: hold
   when:
     - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
