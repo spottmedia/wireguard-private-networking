@@ -51,6 +51,14 @@
   when:
     - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
+- name: Hold version of wireguard (if needed)
+  dpkg_selections:
+    name: wireguard
+    selection: hold
+  when:
+    - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+    - wireguard_hold_selection
+
 - name: Install wireguard (pacman)
   pacman:
     name:
