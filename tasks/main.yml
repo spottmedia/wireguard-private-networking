@@ -53,7 +53,7 @@
     
 - name: Hold version of wireguard packages (if needed)
   dpkg_selections:
-    name: {{ item }}
+    name: "{{ item }}"
     selection: hold
   with_items: 
     - wireguard
