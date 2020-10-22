@@ -1,4 +1,12 @@
 ---
+- name: (Backwards compat) remove old ppa if there
+  apt_repository:
+    repo: 'ppa:wireguard/wireguard'
+    state: absent
+    update_cache: true
+  when:
+    - ansible_distribution == "Ubuntu"
+
 - name: Install linux headers (Ubuntu)
   apt:
     update_cache: yes
@@ -14,14 +22,6 @@
     dest: /etc/apt/sources.list.d/backport.list
   when:
     - ansible_distribution == "Debian" and debian_enable_backports
-
-- name: Remove old ppa if there
-  apt_repository:
-    repo: 'ppa:wireguard/wireguard'
-    state: absent
-    update_cache: true
-  when:
-    - ansible_distribution == "Ubuntu"
 
 - name: Install wireguard (apt)
   apt:
