@@ -20,6 +20,8 @@ $ ansible-galaxy install mawalu.wireguard_private_networking
 
 Install this role, assign a `vpn_ip` variable to every host that should be part of the network and run the role. Plese make sure to allow the VPN port (default is 5888) in your firewall. Here is a small example configuration:
 
+Optionally, you can set a `public_addr` on each host. This address will be used to connect to the wireguard peer instead of the address in the inventory. Useful if you are configuring over a different network than wireguard is using. e.g. ansible connects over a LAN to your peer.
+
 ```yaml
 # inventory host file
 
@@ -27,6 +29,7 @@ wireguard:
   hosts:
     1.1.1.1:
       vpn_ip: 10.1.0.1/32
+      public_addr: "example.com" # optional
     2.2.2.2:
       vpn_ip: 10.1.0.2/32
 
@@ -68,8 +71,15 @@ wireguard_mtu: 1500 # Optionally a MTU to set in the wg-quick file. Not set by d
 
 debian_enable_backports: true # if the debian backports repos should be added on debian machines
 
+# Raspberry Pi Zero support
+# Needs kernel headers and manual compilation of wireguard, opt in via flag, install `community.general` collection
+# Caution: Might trigger a reboot.
+allow_build_from_source: true
+
+wireguard_sources_path: "/var/cache" # Location to clone the WireGuard sources if manual build is required
+
 client_vpn_ip: "" # if set an additional wireguard config file will be generated at the specified path on localhost
-client_wireguard_path: "~/wg.conf" # path on localhost to write client config, if client_vpn_ip is set 
+client_wireguard_path: "~/wg.conf" # path on localhost to write client config, if client_vpn_ip is set
 
 # a list of additional peers that will be added to each server
 wireguard_additional_peers:
