@@ -37,7 +37,6 @@
     selection: hold
   with_items: 
     - wireguard
-    - wireguard-dkms
   when:
     - ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
     - wireguard_hold_selection
