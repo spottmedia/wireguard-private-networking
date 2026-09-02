@@ -15,3 +15,4 @@ wireguard_post_up: false
 wireguard_post_down: false
 wireguard_skip_restart: false
 wireguard_hold_selection: false
+wireguard_skip_vpn_hosts_entry: false

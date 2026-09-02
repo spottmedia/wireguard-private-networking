@@ -18,6 +18,9 @@ MTU = {{ wireguard_mtu }}
 PublicKey = {{ hostvars[node].public.content | b64decode | trim }}
 AllowedIPs = {{ hostvars[node].vpn_ip }}
 Endpoint = {{ hostvars[node].vpn_endpoint | default(hostvars[node]['inventory_hostname']) }}:{{ wireguard_port }}
+{% if vpn_keepalive is defined %}
+PersistentKeepalive = {{ vpn_keepalive }}
+{% endif %}
 
 {% endif %}
 {% endfor %}
