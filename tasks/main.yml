@@ -204,5 +204,7 @@
 
 - name: add nodes to /etc/hosts (ansible_inventory resolves to vpn_ip)
   lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].vpn_ip }} {{item}}" state=present
-  when: hostvars[item].vpn_ip is defined
+  when:
+    - hostvars[item].vpn_ip is defined
+    - not (hostvars[item].skip_vpn_hosts_entry | default(wireguard_skip_vpn_hosts_entry))
   with_items: "{{ play_hosts }}"
